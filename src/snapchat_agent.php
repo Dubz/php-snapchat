@@ -53,7 +53,8 @@ abstract class SnapchatAgent {
 		CURLOPT_CONNECTTIMEOUT => 5,
 		CURLOPT_RETURNTRANSFER => TRUE,
 		CURLOPT_TIMEOUT => 10,
-		CURLOPT_USERAGENT => 'Snapchat/4.1.07 (Nexus 4; Android 18; gzip)',
+		CURLOPT_USERAGENT => 'Snapchat/8.1.1 (Nexus 5; Android 21; gzip)',
+		CURLOPT_HTTPHEADER => array('Accept-Language: en'),
 	);
 
 	/**
@@ -190,6 +191,59 @@ abstract class SnapchatAgent {
 	}
 
 	/**
+	 * Checks to see if a blob looks like a compressed file.
+	 *
+	 * @param data $data
+	 *   The blob data (or just the header).
+	 *
+	 * @return bool
+	 *   TRUE if the blob looks like a compressed file, FALSE otherwise.
+	 */
+	function isCompressed($data) {
+		// Check for a PK header.
+		if ($data[0] == chr(0x50) && $data[1] == chr(0x4B)) {
+			return TRUE;
+		}
+
+		return FALSE;
+	}
+
+	/**
+	 * Uncompress the blob and put the data into an Array.
+	 * 	Array(
+	 * 		overlay~zip-CE6F660A-4A9F-4BD6-8183-245C9C75B8A0	=> overlay_file_data,
+	 *		media~zip-CE6F660A-4A9F-4BD6-8183-245C9C75B8A0		=> m4v_file_data
+	 * 	)
+	 *
+	 * @param data $data
+	 *   The blob data (or just the header).
+	 *
+	 * @return array
+	 *   Array containing both file contents, or FALSE if couldn't extract.
+	 */
+	function unCompress($data) {
+		if (!file_put_contents("./temp", $data)) {
+			exit('Should have write access to own folder');
+		}
+		$resource = zip_open("./temp");
+		$result = FALSE;
+		if (is_resource($resource)) {
+			while($zip_entry = zip_read($resource)) {
+				$filename = zip_entry_name($zip_entry);
+				if (zip_entry_open($resource, $zip_entry, "r")) {
+					$result[$filename] = zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
+					zip_entry_close($zip_entry);
+				} else {
+					return FALSE;
+				}
+			}
+			zip_close($resource);
+		}
+		
+		return $result;
+	}
+
+	/**
 	 * Performs a GET request. Currently only used for story blobs.
 	 *
 	 * @todo
@@ -242,6 +296,10 @@ abstract class SnapchatAgent {
 			CURLOPT_POST => TRUE,
 			CURLOPT_POSTFIELDS => $data,
 			CURLOPT_URL => self::URL . $endpoint,
+			CURLOPT_HTTPHEADER => array(
+				'Accept-Language: en-GB;q=1, en;q=0.9',
+				'Accept-Locale: en'
+			),
 		);
 		curl_setopt_array($ch, $options);
 

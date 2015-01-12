@@ -2,13 +2,16 @@ Snapchat for PHP
 ================
 [![Build Status](https://travis-ci.org/JorgenPhi/php-snapchat.png)](https://travis-ci.org/JorgenPhi/php-snapchat)
 
-This library is built to communicate with the Snapchat API. It is nearly
-feature complete but still lacks some functionality available in the latest
-versions of the official apps (namely Stories).
+This library is built to communicate with the Snapchat API. It was nearly
+feature complete and lacks some newer functionality available in the latest
+versions of the official apps (stories, text messages, and "chat").
 
 It's similar to the [excellent Snaphax library](http://github.com/tlack/snaphax)
 built by Thomas Lackner <[@tlack](http://twitter.com/tlack)>, but the approach
 is different enough that I figured it deserved its own repo.
+
+We love it when developers add new features, fix bugs, and submit pull requests.
+(We need more pull requests!)
 
 
 Usage
@@ -30,7 +33,7 @@ $snaps = $snapchat->getFriendStories();
 
 // Download a specific snap:
 $data = $snapchat->getMedia('122FAST2FURIOUS334r');
-file_put_contents('/home/dan/snap.jpg', $data);
+file_put_contents('/home/jorgen/snap.jpg', $data);
 
 // Download a specific story:
 $data = $snapchat->getStory('[story_media_id]', '[story_key]', '[story_iv]');
@@ -50,14 +53,14 @@ $snapchat->markSnapShot('122FAST2FURIOUS334r');
 // Upload a snap and send it to me for 8 seconds:
 $id = $snapchat->upload(
 	Snapchat::MEDIA_IMAGE,
-	file_get_contents('/home/dan/whatever.jpg')
+	file_get_contents('/home/jorgen/whatever.jpg')
 );
-$snapchat->send($id, array('stelljes'), 8);
+$snapchat->send($id, array('jorgenphi'), 8);
 
 // Upload a video story:
 $id = $snapchat->upload(
 	Snapchat::MEDIA_VIDEO,
-	file_get_contents('/home/dan/whatever.mov')
+	file_get_contents('/home/jorgen/whatever.mov')
 );
 $snapchat->setStory($id, Snapchat::MEDIA_VIDEO);
 
@@ -98,7 +101,7 @@ $snapchat->deleteFriend('bart');
 $snapchat->updatePrivacy(Snapchat::PRIVACY_FRIENDS);
 
 // You want to change your email:
-$snapchat->updateEmail('dan@example.com');
+$snapchat->updateEmail('jorgen@example.com');
 
 // Log out:
 $snapchat->logout();
